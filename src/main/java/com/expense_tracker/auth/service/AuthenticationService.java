@@ -4,10 +4,12 @@ import java.util.Date;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.expense_tracker.auth.dto.RegisterUser;
+import com.expense_tracker.auth.dto.ResetPassword;
 import com.expense_tracker.auth.dto.UserLogin;
 import com.expense_tracker.auth.entity.UserMst;
 import com.expense_tracker.auth.repo.UserRepo;
@@ -31,9 +33,8 @@ public class AuthenticationService {
 	}
 
 	public void signup(RegisterUser input, HttpServletRequest request) throws Exception {
-		
-		if(userRepo.findByEmail(input.getEmail()).isPresent())
-		{
+
+		if (userRepo.findByEmail(input.getEmail()).isPresent()) {
 			throw new Exception("This email is already registered!");
 		}
 		UserMst user = new UserMst();
@@ -41,15 +42,15 @@ public class AuthenticationService {
 		user.setEmail(input.getEmail());
 		user.setPassword(passwordEncoder.encode(input.getPassword()));
 		user.setDob(input.getDob());
-		//user.setProfilePicId(input.getProfileId());
+		// user.setProfilePicId(input.getProfileId());
 		user.setStatus(1);
 		user.setCreatedByIp(request.getRemoteAddr());
 		user.setCreatedDate(new Date());
 
 		userRepo.save(user);
 
-		//long sequence = user.getUserId();
-		
+		// long sequence = user.getUserId();
+
 		/*
 		 * MultipartFile file = input.getFile();
 		 * 
@@ -75,6 +76,32 @@ public class AuthenticationService {
 				.authenticate(new UsernamePasswordAuthenticationToken(input.getEmail(), input.getPassword()));
 
 		return userRepo.findByEmail(input.getEmail()).orElseThrow();
+	}
+
+	public String resetPassword(ResetPassword resetPassword, HttpServletRequest request) throws Exception {
+
+		String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		if (!userRepo.findByEmail(email).isPresent()) {
+			throw new Exception("User not valid");
+		}
+
+		UserMst user = userRepo.findByEmail(email).get();
+
+		// if(!user.getPassword().equals(passwordEncoder.encode(resetPassword.getCurrentPassword())))
+		if (!passwordEncoder.matches(resetPassword.getCurrentPassword(), user.getPassword())) {
+			throw new Exception("Your current password is not matching");
+		} else if (resetPassword.getNewPassword().equals(resetPassword.getCurrentPassword())) {
+			throw new Exception("New password is same as the current password");
+		}
+
+		user.setPassword(passwordEncoder.encode(resetPassword.getNewPassword()));
+		user.setUpdatedBy(user.getUserId());
+		user.setUpdatedDate(new Date());
+		user.setUpdatedByIp(request.getLocalAddr());
+		userRepo.save(user);
+
+		return "Password changed successfully";
 	}
 
 }

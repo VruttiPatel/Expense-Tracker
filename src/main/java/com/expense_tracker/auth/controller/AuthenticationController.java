@@ -3,12 +3,14 @@ package com.expense_tracker.auth.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.expense_tracker.auth.dto.LoginResponse;
 import com.expense_tracker.auth.dto.RegisterUser;
+import com.expense_tracker.auth.dto.ResetPassword;
 import com.expense_tracker.auth.dto.UserLogin;
 import com.expense_tracker.auth.entity.UserMst;
 import com.expense_tracker.auth.service.AuthenticationService;
@@ -52,6 +54,11 @@ public class AuthenticationController {
 		loginResponse.setUserId(authenticatedUser.getUserId());
 
 		return ResponseEntity.ok(loginResponse);
+	}
+
+	@PutMapping("/resetPassword")
+	public String resetPassword(@Valid @RequestBody ResetPassword resetPassword, HttpServletRequest request) throws Exception {
+		return authenticationService.resetPassword(resetPassword, request);
 	}
 
 }
