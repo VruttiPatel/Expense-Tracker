@@ -28,4 +28,6 @@ public class RegisterUser {
 	private String password;
 
 	private Date dob;
+	
+	private MultipartFile file;
 }

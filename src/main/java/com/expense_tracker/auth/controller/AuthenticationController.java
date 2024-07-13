@@ -2,6 +2,7 @@ package com.expense_tracker.auth.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,7 +34,7 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity<String> register(@Valid @RequestBody RegisterUser registerUser, HttpServletRequest request)
+	public ResponseEntity<String> register(@Valid @ModelAttribute RegisterUser registerUser, HttpServletRequest request)
 			throws Exception {
 
 		authenticationService.signup(registerUser, request);

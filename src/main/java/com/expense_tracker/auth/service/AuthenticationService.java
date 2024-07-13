@@ -1,18 +1,22 @@
 package com.expense_tracker.auth.service;
 
+import java.io.FileOutputStream;
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.expense_tracker.auth.dto.RegisterUser;
 import com.expense_tracker.auth.dto.ResetPassword;
 import com.expense_tracker.auth.dto.UserLogin;
 import com.expense_tracker.auth.entity.UserMst;
 import com.expense_tracker.auth.repo.UserRepo;
+import com.expense_tracker.constant.ExpenseTrackerConstants;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -42,33 +46,27 @@ public class AuthenticationService {
 		user.setEmail(input.getEmail());
 		user.setPassword(passwordEncoder.encode(input.getPassword()));
 		user.setDob(input.getDob());
-		// user.setProfilePicId(input.getProfileId());
 		user.setStatus(1);
 		user.setCreatedByIp(request.getRemoteAddr());
 		user.setCreatedDate(new Date());
 
+		user = userRepo.save(user);
+
+		long userId = user.getUserId();
+
+		MultipartFile file = input.getFile();
+
+		String filePath = ExpenseTrackerConstants.ATTACHMENT_PATH;
+		String fileName = UUID.randomUUID().toString();
+		FileOutputStream fout = new FileOutputStream(filePath + fileName);
+		fout.write(file.getBytes());
+		fout.close();
+
+		user.setProfilePicId(fileName);
+		user.setCreatedBy(userId);
+
 		userRepo.save(user);
 
-		// long sequence = user.getUserId();
-
-		/*
-		 * MultipartFile file = input.getFile();
-		 * 
-		 * String filePath =
-		 * "F:\\Vrutti\\Projects\\expense-tracker\\expense-tracker\\src\\main\\resources\\static\\Uploaded Images"
-		 * ;
-		 * 
-		 * 
-		 * InputStream io = file.getInputStream(); byte data[] = new
-		 * byte[io.available()]; io.read(data);
-		 * 
-		 * FileOutputStream fileOutputStream = new FileOutputStream( sequence + "_" +
-		 * filePath + File.separator + file.getOriginalFilename());
-		 * fileOutputStream.write(data); fileOutputStream.close();
-		 * fileOutputStream.close();
-		 * 
-		 * user.setProfilePicId(sequence);
-		 */
 	}
 
 	public UserMst authenticate(UserLogin input) {

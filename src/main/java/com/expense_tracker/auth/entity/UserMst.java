@@ -57,7 +57,7 @@ public class UserMst implements UserDetails{
 	@Column(nullable = false)
 	private long status;
 	
-	private long profilePicId;
+	private String profilePicId;
 	
 	@Column(nullable = false)
 	private long createdBy;
